@@ -8,6 +8,7 @@ spring:
         commit.interval.ms: 100
         default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
         default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.deserialization.exception.handler: com.example.risk.DltDeserializationExceptionHandler
       state-dir: /tmp/kafka-streams
 
 management:
