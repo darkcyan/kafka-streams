@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.processor.api.FixedKeyProcessorSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
@@ -37,9 +38,11 @@ public class StreamsTopologyConfig {
                 tradesByAccountId.leftJoin(limitsByAccount, EnrichedTrade::new);
 
         KStream<String, Decision> decisions =
-                enriched.processValues(new ExposureLimitSupplier(ZoneId.of("Europe/London"), STORE_EXPOSURE, registry));
+                enriched.processValues(processorSupplier(registry));
 
         decisions.split()
+                .branch((k, d) -> "PROCESSOR_ERROR".equals(d.reason()), Branched.withConsumer(ks ->
+                        ks.to("trades-processor-dlt", Produced.with(Serdes.String(), decisionSerde))))
                 .branch((k, d) -> d.approved(), Branched.withConsumer(ks ->
                         ks.to("approved-trades", Produced.with(Serdes.String(), decisionSerde))))
                 .defaultBranch(Branched.withConsumer(ks ->
@@ -48,5 +51,8 @@ public class StreamsTopologyConfig {
         return decisions;
     }
 
+    protected FixedKeyProcessorSupplier<String, EnrichedTrade, Decision> processorSupplier(MeterRegistry registry) {
+        return new ExposureLimitSupplier(ZoneId.of("Europe/London"), STORE_EXPOSURE, registry);
+    }
 
 }
