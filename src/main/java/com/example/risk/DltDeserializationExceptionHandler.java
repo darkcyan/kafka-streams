@@ -1,6 +1,7 @@
 package com.example.risk;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,7 +22,14 @@ public class DltDeserializationExceptionHandler implements DeserializationExcept
 
     private static final Logger log = LoggerFactory.getLogger(DltDeserializationExceptionHandler.class);
 
-    private KafkaProducer<byte[], byte[]> producer;
+    private Producer<byte[], byte[]> producer;
+
+    public DltDeserializationExceptionHandler() {}
+
+    // package-private for testing
+    DltDeserializationExceptionHandler(Producer<byte[], byte[]> producer) {
+        this.producer = producer;
+    }
 
     @Override
     public void configure(Map<String, ?> configs) {
