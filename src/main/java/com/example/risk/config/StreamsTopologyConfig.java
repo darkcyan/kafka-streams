@@ -1,6 +1,7 @@
 package com.example.risk.config;
 
 import com.example.risk.ExposureLimitSupplier;
+import com.example.risk.RiskStreamsUncaughtExceptionHandler;
 import com.example.risk.model.*;
 import com.example.risk.serde.JsonSerde;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -11,6 +12,7 @@ import org.apache.kafka.streams.processor.api.FixedKeyProcessorSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
+import org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer;
 
 import java.time.ZoneId;
 
@@ -53,6 +55,12 @@ public class StreamsTopologyConfig {
 
     protected FixedKeyProcessorSupplier<String, EnrichedTrade, Decision> processorSupplier(MeterRegistry registry) {
         return new ExposureLimitSupplier(ZoneId.of("Europe/London"), STORE_EXPOSURE, registry);
+    }
+
+    @Bean
+    public StreamsBuilderFactoryBeanConfigurer uncaughtExceptionHandlerConfigurer() {
+        return factoryBean -> factoryBean.setKafkaStreamsCustomizer(
+                streams -> streams.setUncaughtExceptionHandler(new RiskStreamsUncaughtExceptionHandler()));
     }
 
 }
