@@ -1,0 +1,20 @@
+spring:
+  kafka:
+    bootstrap-servers: 192.168.0.41:9092
+    streams:
+      application-id: risk-limits-v1
+      properties:
+        processing.guarantee: exactly_once_v2
+        commit.interval.ms: 100
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      state-dir: /tmp/kafka-streams
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: unrestricted
