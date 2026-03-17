@@ -30,8 +30,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Compile
-        run: mvn -B clean compile
+      - name: Build and test
+        run: mvn -B clean package
 
-      - name: Run tests
-        run: mvn -B test
+      - name: Build Docker image
+        run: mvn -B spring-boot:build-image -DskipTests
