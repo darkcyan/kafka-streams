@@ -1,4 +1,4 @@
 package com.example.risk.model;
 
-public record Limit(double limit) {
+public record Limit(String accountId, double maxNotional) {
 }

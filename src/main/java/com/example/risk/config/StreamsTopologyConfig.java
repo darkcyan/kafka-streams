@@ -39,6 +39,8 @@ public class StreamsTopologyConfig {
         KStream<String, EnrichedTrade> enriched =
                 tradesByAccountId.leftJoin(limitsByAccount, EnrichedTrade::new);
 
+        enriched.peek((key,value) -> System.out.println(key + "->" + value));
+
         KStream<String, Decision> decisions =
                 enriched.processValues(processorSupplier(registry));
 

@@ -60,24 +60,24 @@ public final class ExposureLimitProcessor implements FixedKeyProcessor<String, E
             final double delta = signedNotional(trade);
             final double next = prev + delta;
 
-            // Safety policy: if we don't know the limit, reject (change if you want default-approve)
+            // Safety policy: if we don't know the maxNotional, reject (change if you want default-approve)
             if (limitObj == null) {
                 Decision d = new Decision(trade, prev, prev, 0.0, false, "NO_LIMIT");
                 context.forward(record.withValue(d));
                 return;
             }
 
-            final double limit = limitObj.limit();
-            final boolean ok = Math.abs(next) <= limit;
+            final double maxNotional = limitObj.maxNotional();
+            final boolean ok = Math.abs(next) <= maxNotional;
 
             if (ok) {
                 LocalDate today = LocalDate.now(zone);
                 exposureStore.put(accountId, new Exposure(today, next));
-                Decision d = new Decision(trade, prev, next, limit, true, "OK");
+                Decision d = new Decision(trade, prev, next, maxNotional, true, "OK");
                 context.forward(record.withValue(d));
             } else {
                 // don't mutate store on reject
-                Decision d = new Decision(trade, prev, prev, limit, false, "LIMIT_BREACH");
+                Decision d = new Decision(trade, prev, prev, maxNotional, false, "LIMIT_BREACH");
                 context.forward(record.withValue(d));
             }
         } catch (Exception e) {

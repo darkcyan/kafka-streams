@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw test:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(jar tf:*)",
+      "Bash(javap:*)",
+      "Bash(git push:*)",
+      "Bash(./mvnw dependency:tree:*)"
+    ]
+  }
+}
