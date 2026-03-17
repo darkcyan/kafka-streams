@@ -5,6 +5,7 @@ import com.example.risk.RiskStreamsUncaughtExceptionHandler;
 import com.example.risk.model.*;
 import com.example.risk.serde.JsonSerde;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
@@ -18,6 +19,7 @@ import java.time.ZoneId;
 
 @Configuration
 @EnableKafkaStreams
+@Slf4j
 public class StreamsTopologyConfig {
 
     public static final String STORE_EXPOSURE = "exposure-store";
