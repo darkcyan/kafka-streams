@@ -76,7 +76,7 @@ class RiskLimitsTopologyTest {
 
     @Test
     void buyTradeApprovedWhenWithinLimit() {
-        limitsTopic.pipeInput("ACC-1", new Limit(100_000));
+        limitsTopic.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
         tradesTopic.pipeInput("any-key", trade("T1", "ACC-1", 50_000, Side.BUY));
 
         var record = approvedTopic.readRecord();
@@ -91,7 +91,7 @@ class RiskLimitsTopologyTest {
 
     @Test
     void buyTradeRejectedWhenBreachingLimit() {
-        limitsTopic.pipeInput("ACC-1", new Limit(100_000));
+        limitsTopic.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
         tradesTopic.pipeInput("any-key", trade("T1", "ACC-1", 150_000, Side.BUY));
 
         var record = rejectedTopic.readRecord();
@@ -118,7 +118,7 @@ class RiskLimitsTopologyTest {
 
     @Test
     void exposureAccumulatesAcrossApprovedTrades() {
-        limitsTopic.pipeInput("ACC-1", new Limit(100_000));
+        limitsTopic.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
         tradesTopic.pipeInput("k1", trade("T1", "ACC-1", 40_000, Side.BUY));
         tradesTopic.pipeInput("k2", trade("T2", "ACC-1", 30_000, Side.BUY));
 
@@ -136,7 +136,7 @@ class RiskLimitsTopologyTest {
 
     @Test
     void storeNotUpdatedOnRejection() {
-        limitsTopic.pipeInput("ACC-1", new Limit(100_000));
+        limitsTopic.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
         tradesTopic.pipeInput("k1", trade("T1", "ACC-1", 80_000, Side.BUY));  // ok → store=80k
         tradesTopic.pipeInput("k2", trade("T2", "ACC-1", 30_000, Side.BUY));  // breach → store unchanged
         tradesTopic.pipeInput("k3", trade("T3", "ACC-1", 10_000, Side.BUY));  // ok → prev should be 80k
@@ -154,7 +154,7 @@ class RiskLimitsTopologyTest {
 
     @Test
     void sellTradeReducesExposure() {
-        limitsTopic.pipeInput("ACC-1", new Limit(100_000));
+        limitsTopic.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
         tradesTopic.pipeInput("k1", trade("T1", "ACC-1", 60_000, Side.BUY));
         tradesTopic.pipeInput("k2", trade("T2", "ACC-1", 20_000, Side.SELL));
 
@@ -170,7 +170,7 @@ class RiskLimitsTopologyTest {
 
     @Test
     void largeSellRejectedByAbsoluteLimit() {
-        limitsTopic.pipeInput("ACC-1", new Limit(100_000));
+        limitsTopic.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
         tradesTopic.pipeInput("k1", trade("T1", "ACC-1", 150_000, Side.SELL)); // |0-150k|=150k > 100k
 
         Decision d = rejectedTopic.readRecord().value();
@@ -182,8 +182,8 @@ class RiskLimitsTopologyTest {
 
     @Test
     void accountsAreIsolated() {
-        limitsTopic.pipeInput("ACC-A", new Limit(100_000));
-        limitsTopic.pipeInput("ACC-B", new Limit(50_000));
+        limitsTopic.pipeInput("ACC-A", new Limit("ACC-A", 100_000));
+        limitsTopic.pipeInput("ACC-B", new Limit("ACC-B", 50_000));
         tradesTopic.pipeInput("k1", trade("T1", "ACC-A", 80_000, Side.BUY));
         tradesTopic.pipeInput("k2", trade("T2", "ACC-B", 40_000, Side.BUY));
 
@@ -212,7 +212,7 @@ class RiskLimitsTopologyTest {
             var rejectedOut = throwingDriver.createOutputTopic("rejected-trades",
                     Serdes.String().deserializer(), new JsonSerde<>(Decision.class).deserializer());
 
-            throwingLimits.pipeInput("ACC-1", new Limit(100_000));
+            throwingLimits.pipeInput("ACC-1", new Limit("ACC-1", 100_000));
             throwingTrades.pipeInput("k1", trade("T1", "ACC-1", 50_000, Side.BUY));
 
             // Stream must not halt — record routes to DLT, not approved/rejected
